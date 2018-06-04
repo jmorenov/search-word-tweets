@@ -1,0 +1,35 @@
+{
+  "name": "search-word-tweets",
+  "version": "1.0.0",
+  "description": "Simple web application to search words on popular tweets.",
+  "author": {
+    "name": "Javier Moreno",
+    "email": "jmorenov28@gmail.com"
+  },
+  "license": "MIT",
+  "scripts": {
+    "client": "cd client && npm start",
+    "server": "node server.js",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "nodemon": "^1.17.5"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmorenov/search-word-tweets.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jmorenov/search-word-tweets/issues"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "twitter",
+    "react"
+  ]
+}
