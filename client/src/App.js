@@ -16,7 +16,8 @@ class App extends Component {
   }
 
   callApi = async () => {
-    const response = await fetch('/api/test');
+    const valueToSearch = JSON.stringify('probando un texto');
+    const response = await fetch('/api/twitter/?search='+valueToSearch);
     const body = await response.json();
 
     if (response.status !== 200) throw Error(body.message);
