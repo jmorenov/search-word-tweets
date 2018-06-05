@@ -34,10 +34,11 @@ app.get('/api/twitter/', (req, res) => {
                 url: 'https://twitter.com/statuses/' + tweet.id_str
             }));
             const next_results = repos.search_metadata.next_results;
-
+            const count = repos.search_metadata.count;
             res.send({
                 tweets: tweets,
-                next_results: next_results || ""
+                next_results: next_results || "",
+                count: count
             });
         })
         .catch(function (err) {
