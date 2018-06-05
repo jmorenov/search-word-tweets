@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 
-import './App.css';
+import './Main.css';
+import TweetsList from "../tweets-list/TweetsList";
+import getTweets from './TwitterService';
 
 const applyUpdateResult = (result) => (prevState) => ({
     tweets: [...prevState.tweets, ...result.tweets],
@@ -26,21 +28,7 @@ const applyInitialState = () => ({
     isLoading: false
 });
 
-const getTweets = async (valueToSearch, nextResults) => {
-  var uri;
-  if (nextResults === null) {
-    uri = '/api/twitter/?search='+valueToSearch
-  } else {
-    uri = '/api/twitter/'+nextResults;
-  }
-
-  const response = await fetch(uri);
-  const body = await response.json();
-
-  return body;
-};
-
-class App extends Component {
+class Main extends Component {
     constructor(props) {
         super(props);
 
@@ -86,14 +74,14 @@ class App extends Component {
     render() {
       return (
           <div className="page">
-              <div className="interactions">
+              <div className="search-box">
                   <form type="submit" onSubmit={this.onInitialSearch}>
                       <input type="text" ref={node => this.input = node} />
                       <button type="submit">Search</button>
                   </form>
               </div>
 
-              <List
+              <TweetsList
                   valueSearched={this.input}
                   list={this.state.tweets}
                   isLoading={this.state.isLoading}
@@ -105,51 +93,4 @@ class App extends Component {
     }
 }
 
-class List extends React.Component {
-    componentDidMount() {
-        window.addEventListener('scroll', this.onScroll, false);
-    }
-
-    componentWillUnmount() {
-        window.removeEventListener('scroll', this.onScroll, false);
-    }
-
-    onScroll = () => {
-        if (
-            (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 500) &&
-            this.props.nextResults && this.props.nextResults !== null && !this.props.isLoading
-        ) {
-            this.props.onMoreSearch();
-        }
-    }
-
-    getStatusElement = (params) => {
-        if (params.isLoading) {
-            return (<span>Loading...</span>);
-        } else if (params.valueSearched) {
-            if (!params.nextResults && params.list.length) {
-                return (<span>No more results</span>);
-            } else {
-                return (<span>No results</span>);
-            }
-        }
-    }
-
-    render() {
-        const params = this.props;
-        return (
-            <div>
-                <div className="list">
-                    {params.list.map(item => <div className="list-row" key={item.id}>
-                        <a href={item.url}>{item.text}</a>
-                    </div>)}
-                </div>
-                <div className="status">
-                    {this.getStatusElement(params)}
-                </div>
-            </div>
-        );
-    };
-}
-
-export default App;
+export default Main;
