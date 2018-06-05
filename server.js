@@ -7,32 +7,24 @@ const port = process.env.PORT || 3001;
 
 app.get('/api/twitter/', (req, res) => {
     var options = {
+        uri: 'https://api.twitter.com/1.1/search/tweets.json',
         json: true
     };
 
     if ('search' in req.query) {
-        const search = req.query.search;
-
-        options.uri = 'https://api.twitter.com/1.1/search/tweets.json';
         options.qs = {
-            q: search,
+            q: req.query.search,
             result_type: 'popular',
         };
-
-        options.headers = {
-            'User-Agent': 'Request-Promise',
-            'Authorization': authorization.getAuthorization('GET', 'https://api.twitter.com/1.1/search/tweets.json',
-                { 'q': search, 'result_type': 'popular'})
-        };
     } else {
-        options.uri = 'https://api.twitter.com/1.1/search/tweets.json';
         options.qs = req.query;
-        options.headers = {
-            'User-Agent': 'Request-Promise',
-            'Authorization': authorization.getAuthorization('GET', 'https://api.twitter.com/1.1/search/tweets.json',
-                req.query)
-        };
     }
+
+    options.headers = {
+        'User-Agent': 'Request-Promise',
+        'Authorization': authorization.getAuthorization('GET', 'https://api.twitter.com/1.1/search/tweets.json',
+            options.qs)
+    };
 
     rp(options)
         .then(function (repos) {
