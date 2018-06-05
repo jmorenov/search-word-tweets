@@ -1,41 +1,122 @@
 import React, { Component } from 'react';
 
-import logo from './logo.svg';
-
 import './App.css';
 
+const applyUpdateResult = (result) => (prevState) => ({
+    tweets: [...prevState.tweets, ...result.tweets],
+    nextResults: result.next_results,
+    isLoading: false
+});
+
+const applySetResult = (result) => (prevState) => ({
+    tweets: result.tweets,
+    nextResults: result.next_results,
+    isLoading: false
+});
+
+const applyEmptyResult = (result) => (prevState) => ({
+    tweets: prevState.tweets,
+    nextResults: null,
+    isLoading: false
+});
+
+const applyInitialState = () => ({
+    tweets: [],
+    nextResults: null,
+    isLoading: false
+});
+
+const getTweets = async (valueToSearch, nextResults) => {
+  var uri;
+  if (nextResults === null) {
+    uri = '/api/twitter/?search='+valueToSearch
+  } else {
+    uri = '/api/twitter/'+nextResults;
+  }
+
+  const response = await fetch(uri);
+  const body = await response.json();
+
+  return body;
+};
+
 class App extends Component {
-  state = {
-    response: ''
-  };
+    constructor(props) {
+        super(props);
 
-  componentDidMount() {
-    this.callApi()
-      .then(res => this.setState({ response: res.express }))
-      .catch(err => console.log(err));
-  }
+        this.state = {
+            tweets: [],
+            nextResults: null,
+            isLoading: false
+        };
+    }
 
-  callApi = async () => {
-    const valueToSearch = JSON.stringify('probando un texto');
-    const response = await fetch('/api/twitter/?search='+valueToSearch);
-    const body = await response.json();
+    onInitialSearch = (e) => {
+        e.preventDefault();
 
-    if (response.status !== 200) throw Error(body.message);
+        if (this.input === '') {
+            return;
+        }
 
-    return body;
-  };
+        this.setState(applyInitialState());
 
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">{this.state.response}</p>
-      </div>
-    );
-  }
+        this.fetchStories(this.input.value, null);
+    }
+
+    onMoreSearch = (e) =>
+        this.fetchStories(this.input.value, this.state.nextResults);
+
+    fetchStories = (value, nextResults) => {
+        this.setState({isLoading: true});
+        getTweets(value, nextResults).then(result => this.onSetResult(result, nextResults));
+    }
+
+    onSetResult = (result, nextResults) => {
+        if (result.tweets.length > 0) {
+            if (nextResults === null) {
+                this.setState(applySetResult(result))
+            } else {
+                this.setState(applyUpdateResult(result));
+            }
+        } else {
+            this.setState(applyEmptyResult(result));
+        }
+    }
+
+    render() {
+      return (
+          <div className="page">
+              <div className="interactions">
+                  <form type="submit" onSubmit={this.onInitialSearch}>
+                      <input type="text" ref={node => this.input = node} />
+                      <button type="submit">Search</button>
+                  </form>
+              </div>
+
+              <List
+                  list={this.state.tweets}
+                  isLoading={this.state.isLoading}
+                  nextResults={this.state.nextResults}
+                  onMoreSearch={this.onMoreSearch}
+              />
+          </div>
+      );
+    }
 }
+
+const List = ({ list, nextResults, isLoading, onMoreSearch }) =>
+    <div>
+      <div className="list">
+          {list.map(item => <div className="list-row" key={item.id}>
+              <a href={item.url}>{item.text}</a>
+          </div>)}
+      </div>
+
+      <div className="interactions">
+          {isLoading && <span>Loading...</span>}
+          {(nextResults && nextResults !== null && !isLoading) && <button type="button" onClick={onMoreSearch}>More</button>}
+          {!nextResults && <span>No more results</span>}
+      </div>
+    </div>
 
 export default App;
