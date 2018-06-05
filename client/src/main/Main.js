@@ -4,30 +4,6 @@ import './Main.css';
 import TweetsList from "../tweets-list/TweetsList";
 import getTweets from './TwitterService';
 
-const applyUpdateResult = (result) => (prevState) => ({
-    tweets: [...prevState.tweets, ...result.tweets],
-    nextResults: result.next_results,
-    isLoading: false
-});
-
-const applySetResult = (result) => (prevState) => ({
-    tweets: result.tweets,
-    nextResults: result.next_results,
-    isLoading: false
-});
-
-const applyEmptyResult = (result) => (prevState) => ({
-    tweets: prevState.tweets,
-    nextResults: null,
-    isLoading: false
-});
-
-const applyInitialState = () => ({
-    tweets: [],
-    nextResults: null,
-    isLoading: false
-});
-
 class Main extends Component {
     constructor(props) {
         super(props);
@@ -42,32 +18,53 @@ class Main extends Component {
     onInitialSearch = (e) => {
         e.preventDefault();
 
-        if (this.input === '') {
-            return;
+        if (this.input !== '') {
+            this.setState(this.applyInitialState());
+            this.onSearch(this.input.value, null);
         }
-
-        this.setState(applyInitialState());
-
-        this.fetchStories(this.input.value, null);
     }
 
     onMoreSearch = (e) =>
-        this.fetchStories(this.input.value, this.state.nextResults);
+        this.onSearch(this.input.value, this.state.nextResults);
 
-    fetchStories = (value, nextResults) => {
+    onSearch = (value, nextResults) => {
         this.setState({isLoading: true});
         getTweets(value, nextResults).then(result => this.onSetResult(result, nextResults));
     }
 
+    applyUpdateResult = (result) => (prevState) => ({
+        tweets: [...prevState.tweets, ...result.tweets],
+        nextResults: result.next_results,
+        isLoading: false
+    });
+
+    applySetResult = (result) => (prevState) => ({
+        tweets: result.tweets,
+        nextResults: result.next_results,
+        isLoading: false
+    });
+
+    applyEmptyResult = (result) => (prevState) => ({
+        tweets: prevState.tweets,
+        nextResults: null,
+        isLoading: false
+    })
+
+    applyInitialState = () => ({
+        tweets: [],
+        nextResults: null,
+        isLoading: false
+    })
+
     onSetResult = (result, nextResults) => {
         if (result.tweets.length > 0) {
             if (nextResults === null) {
-                this.setState(applySetResult(result))
+                this.setState(this.applySetResult(result))
             } else {
-                this.setState(applyUpdateResult(result));
+                this.setState(this.applyUpdateResult(result));
             }
         } else {
-            this.setState(applyEmptyResult(result));
+            this.setState(this.applyEmptyResult(result));
         }
     }
 
